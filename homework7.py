@@ -24,9 +24,11 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, "%d.%m.%Y")  
+            datetime.strptime(value, "%d.%m.%Y")  
+            self.value = value
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
+
 
         
     def find_next_weekday(self, start_date, weekday):
@@ -81,9 +83,8 @@ class Record:
         return None
 
     def add_birthday(self, birthday):
-        birthday_obj = Birthday(birthday)
-        self.birthday = birthday_obj
-        return f"Birthday {self.birthday.value.strftime('%d.%m.%Y')} added for contact {self.name.value}."
+        self.birthday  = Birthday(birthday)
+        return f"День народження {self.birthday.value.strftime('%d.%m.%Y')} додано для контакту {self.name.value}."
 
 
   
@@ -145,11 +146,11 @@ def input_error(func):
 
 
 def parse_input(user_input):
-    if not user_input.strip():
+    parts = user_input.split()
+    if not parts:
         return "", []
-    cmd, *args = user_input.split()
-    cmd = cmd.strip().lower()
-    return cmd, *args
+    cmd, *args = parts
+    return cmd.lower(), args
 
 
 @input_error
@@ -197,17 +198,17 @@ def show_phone(args, book: AddressBook):
 
 
 @input_error
-def show_all(args, book):
+def show_all(args, book: AddressBook):
     if not book.data:
         return "Немає доступних контактів."
     return str(book)
 
 @input_error
 def add_birthday(args, book: AddressBook):
-    name, birthday_str, *_ = args
+    name = args[0]
+    birthday_str = args[1]
     record = book.find(name)
     if record:
-        record.add_birthday(birthday_str)
         return f"День народження {birthday_str} додано для контакту {name}."
     else:
         new_record = Record(name)
@@ -216,13 +217,15 @@ def add_birthday(args, book: AddressBook):
         return f"Контакт {name} додано з днем народження {birthday_str}."
 
 @input_error
-def show_birthdays(args, book: AddressBook):
+def show_birthday(args, book: AddressBook):
     name = args[0]
     record = book.find(name)
-    if record:
-        return f"{name} має день народження {record.birthday.value.strftime('%d.%m.%Y')}."
-    else:
+    if record is None:
         return f"Контакт {name} не знайдено."
+    if not record.birthday:
+        return f"У контакта {name} не вказано дату народження."
+    birthday_str = record.birthday.value.strftime('%d.%m.%Y')
+    return f"{name} має день народження {birthday_str}."
     
 
 @input_error
@@ -253,10 +256,10 @@ def main():
             print(show_all(contacts))
         elif command == "remove":
             print(remove_contact(args, contacts))
-        elif command == "add_birthday":
+        elif command == "add-birthday":
             print(add_birthday(args, contacts))
         elif command == "show_birthdays":
-            print(show_birthdays(args, contacts))
+            print(show-birthdays(args, contacts))
         elif command == "birthdays":
             print(birthdays(contacts))
         else:
@@ -271,34 +274,3 @@ def main():
 
 
 
-# Створення нової адресної книги
-book = AddressBook()
-
-    # Створення запису для John
-john_record = Record("John")
-john_record.add_phone("1234567890")
-john_record.add_phone("5555555555")
-
-    # Додавання запису John до адресної книги
-book.add_record(john_record)
-
-    # Створення та додавання нового запису для Jane
-jane_record = Record("Jane")
-jane_record.add_phone("9876543210")
-book.add_record(jane_record)
-
-    # Виведення всіх записів у книзі
-print(book)
-
-    # Знаходження та редагування телефону для John
-john = book.find("John")
-john.edit_phone("1234567890", "1112223333")
-
-print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
-
-    # Пошук конкретного телефону у записі John
-found_phone = john.find_phone("5555555555")
-print(f"{john.name}: {found_phone}")  # Виведення: John: 5555555555
-
-    # Видалення запису Jane
-book.delete("Jane")

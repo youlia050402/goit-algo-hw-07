@@ -146,11 +146,11 @@ def input_error(func):
 
 
 def parse_input(user_input):
-    parts = user_input.split()
-    if not parts:
+    if not user_input.strip():
         return "", []
-    cmd, *args = parts
-    return cmd.lower(), args
+    cmd, *args = user_input.split()
+    return cmd.strip().lower(), args
+  
 
 
 @input_error
@@ -253,7 +253,7 @@ def main():
         elif command == "phone":
             print(show_phone(args, contacts))
         elif command == "all":
-            print(show_all(contacts))
+            print(show_all(args, contacts))
         elif command == "remove":
             print(remove_contact(args, contacts))
         elif command == "add-birthday":
@@ -266,8 +266,8 @@ def main():
             print("Invalid command.")
 
             
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()
     
     
 

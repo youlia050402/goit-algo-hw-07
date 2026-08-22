@@ -110,20 +110,25 @@ class AddressBook(UserDict):
             if birthday.weekday() >= 5:
                 return self.find_next_weekday(birthday, 0)
             return birthday
+
     
-    def get_upcoming_birthdays(self, users, days=7):
+    def get_upcoming_birthdays(self, days=7):
         upcoming_birthdays = []
         today = date.today()
         next_week = today + timedelta(days=days)
-        for user in users:
-            birthday_this_year = user["birthday"].replace(year=today.year)
+        for record in self.data.values():
+            if not record.birthday:
+                continue
+            birthday_this_year = record.birthday.value.replace(year=today.year).date()
             if birthday_this_year < today:
-                birthday_this_year = birthday_this_year.replace(year=today.year + 1).date()
-            if 0 <= (birthday_this_year - today).days <= days:
+                birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+            if 0 <= (birthday_this_year - today).days <= days:                    
                 congratulation_date = self.adjust_for_weekend(birthday_this_year)
-                congratulation_date_str = self.date_to_string(congratulation_date)
-                upcoming_birthdays.append({"name": user["name"], "congratulation_date": congratulation_date_str})
+                congratulation_date_str = congratulation_date.strftime('%d.%m.%Y')
+                upcoming_birthdays.append({"name": record.name.value, "congratulation_date": congratulation_date_str})
         return upcoming_birthdays
+                           
+        
 
     def __str__(self):
             return '\n'.join(str(record) for record in self.data.values())

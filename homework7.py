@@ -24,8 +24,7 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            datetime.strptime(value, "%d.%m.%Y")  
-            self.value = value
+            self.value = datetime.strptime(value, "%d.%m.%Y") 
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
 
@@ -115,11 +114,11 @@ class AddressBook(UserDict):
     def get_upcoming_birthdays(self, users, days=7):
         upcoming_birthdays = []
         today = date.today()
-    
+        next_week = today + timedelta(days=days)
         for user in users:
             birthday_this_year = user["birthday"].replace(year=today.year)
             if birthday_this_year < today:
-                birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+                birthday_this_year = birthday_this_year.replace(year=today.year + 1).date()
             if 0 <= (birthday_this_year - today).days <= days:
                 congratulation_date = self.adjust_for_weekend(birthday_this_year)
                 congratulation_date_str = self.date_to_string(congratulation_date)
@@ -128,6 +127,7 @@ class AddressBook(UserDict):
 
     def __str__(self):
             return '\n'.join(str(record) for record in self.data.values())
+
 
 def input_error(func):
     @wraps(func)
@@ -145,6 +145,7 @@ def input_error(func):
     return inner
 
 
+
 def parse_input(user_input):
     if not user_input.strip():
         return "", []
@@ -155,7 +156,8 @@ def parse_input(user_input):
 
 @input_error
 def add_contact(args, book: AddressBook):
-    name, phone, *_ = args
+    name = args[0]
+    phone = args[1]
     record = book.find(name)
     if record:
         record.add_phone(phone)
@@ -209,6 +211,7 @@ def add_birthday(args, book: AddressBook):
     birthday_str = args[1]
     record = book.find(name)
     if record:
+        record.add_birthday(birthday_str)
         return f"День народження {birthday_str} додано для контакту {name}."
     else:
         new_record = Record(name)

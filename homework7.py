@@ -212,6 +212,7 @@ def show_all(args, book: AddressBook):
 
 @input_error
 def add_birthday(args, book: AddressBook):
+    print(args)
     name = args[0]
     birthday_str = args[1]
     record = book.find(name)
@@ -248,7 +249,7 @@ def main():
     print("Welcome to the assistant bot!")
     while True:
         user_input = input("Enter a command: ")
-        command, *args = parse_input(user_input)
+        command, args = parse_input(user_input)
         if command in ["close", "exit"]:
             print("Good bye!")
             break
@@ -266,8 +267,8 @@ def main():
             print(remove_contact(args, contacts))
         elif command == "add-birthday":
             print(add_birthday(args, contacts))
-        elif command == "show_birthdays":
-            print(show-birthdays(args, contacts))
+        elif command == "show-birthday":
+            print(show_birthday(args, contacts))
         elif command == "birthdays":
             print(birthdays(contacts))
         else:

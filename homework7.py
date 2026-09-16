@@ -24,9 +24,10 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, "%d.%m.%Y") 
+            datetime.strptime(value, "%d.%m.%Y") 
+            self.value = value
         except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            raise ValueError("Неправильний формат дати. Використовуйте DD.MM.YYYY")
 
 
         
@@ -83,7 +84,7 @@ class Record:
 
     def add_birthday(self, birthday):
         self.birthday  = Birthday(birthday)
-        return f"День народження {self.birthday.value.strftime('%d.%m.%Y')} додано для контакту {self.name.value}."
+        return f"День народження {self.birthday.value} додано для контакту {self.name.value}."
 
 
   
@@ -119,7 +120,8 @@ class AddressBook(UserDict):
         for record in self.data.values():
             if not record.birthday:
                 continue
-            birthday_this_year = record.birthday.value.replace(year=today.year).date()
+            birthday_date = datetime.strptime(record.birthday.value, "%d.%m.%Y").date()
+            birthday_this_year = birthday_date.replace(year=today.year)
             if birthday_this_year < today:
                 birthday_this_year = birthday_this_year.replace(year=today.year + 1)
             if 0 <= (birthday_this_year - today).days <= days:                    
@@ -148,6 +150,7 @@ def input_error(func):
         except AttributeError:
             return "Помилка: у цього контакту відсутня дата народження або контакт не знайдено."
     return inner
+    
 
 
 
@@ -217,8 +220,8 @@ def add_birthday(args, book: AddressBook):
     birthday_str = args[1]
     record = book.find(name)
     if record:
-        record.add_birthday(birthday_str)
-        return f"День народження {birthday_str} додано для контакту {name}."
+        return record.add_birthday(birthday_str)
+        #return f"День народження {birthday_str} додано для контакту {name}."
     else:
         new_record = Record(name)
         new_record.add_birthday(birthday_str)
@@ -233,10 +236,8 @@ def show_birthday(args, book: AddressBook):
         return f"Контакт {name} не знайдено."
     if not record.birthday:
         return f"У контакта {name} не вказано дату народження."
-    birthday_str = record.birthday.value.strftime('%d.%m.%Y')
-    return f"{name} має день народження {birthday_str}."
+    return f"{name} має день народження {record.birthday.value}."
     
-
 @input_error
 def birthdays(book: AddressBook):
     birthdays = book.get_upcoming_birthdays(days=int())
